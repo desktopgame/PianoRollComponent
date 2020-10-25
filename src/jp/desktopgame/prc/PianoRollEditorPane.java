@@ -40,6 +40,7 @@ public class PianoRollEditorPane extends JPanel {
         this.pianoRoll = new PianoRoll();
         this.pianoRollLayerUI = new PianoRollLayerUI();
         JScrollPane s = new JScrollPane(new JLayer<PianoRoll>(pianoRoll, pianoRollLayerUI));
+        pianoRollLayerUI.setScrollPane(s);
         this.keyboard = new Keyboard(pianoRoll, s);
         this.ruler = new Ruler(pianoRoll, pianoRollLayerUI, s, keyboard);
         this.undoManager = new UndoManager();

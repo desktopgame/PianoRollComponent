@@ -12,6 +12,7 @@ import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -19,6 +20,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.swing.JComponent;
 import javax.swing.JLayer;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
+import javax.swing.JViewport;
 import javax.swing.Timer;
 import javax.swing.event.EventListenerList;
 import javax.swing.plaf.LayerUI;
@@ -39,6 +43,7 @@ public class PianoRollLayerUI extends LayerUI<PianoRoll> {
     private UpdateRate updateRate;
     private EventListenerList listenerList;
     private List<Note> cachedNotes;
+    private JScrollPane scrollPane;
 
     public enum BarStyle {
         Loop,
@@ -55,11 +60,9 @@ public class PianoRollLayerUI extends LayerUI<PianoRoll> {
         this.cachedNotes = new ArrayList<>();
     }
 
-    private boolean sync;
-
     private void onTime(ActionEvent e) {
         self.repaint(new Rectangle(barPosition, 0, barWidth, p.getUI().computeHeight()));
-        this.barPosition++;
+        updateBarPosition(barPosition + 1);
         fireSequenceEvent(new SequenceEvent(this, barPosition - 1, barPosition));
         int index = p.getUI().getRelativeBeatIndex(barPosition);
         List<Note> allNote = new ArrayList<>();
@@ -87,15 +90,27 @@ public class PianoRollLayerUI extends LayerUI<PianoRoll> {
             return;
         }
         if (this.barStyle == BarStyle.Loop) {
-            this.barPosition = 0;
+            updateBarPosition(0);
             fireSequenceEvent(new SequenceEvent(this, barPosition, 0));
         } else {
             self.repaint(new Rectangle(barPosition, 0, barWidth, p.getUI().computeHeight()));
-            this.barPosition = 0;
+            updateBarPosition(0);
             fireSequenceEvent(new SequenceEvent(this, barPosition, 0));
             timer.stop();
             self.repaint(new Rectangle(barPosition, 0, barWidth, p.getUI().computeHeight()));
         }
+    }
+
+    private void updateBarPosition(int newBarPosition) {
+        this.barPosition = newBarPosition;
+        if (scrollPane == null) {
+            return;
+        }
+        JViewport vp = scrollPane.getViewport();
+        Rectangle viewRect = vp.getViewRect();
+        Point vpos = vp.getViewPosition();
+        vpos.x = Math.max(newBarPosition - (viewRect.width / 2), 0);
+        vp.setViewPosition(vpos);
     }
 
     private void fireNotePlay(Note note, NotePlayEventType type) {
@@ -135,7 +150,7 @@ public class PianoRollLayerUI extends LayerUI<PianoRoll> {
     public void setSequencePosition(int pos) {
         self.repaint(new Rectangle(barPosition, 0, barWidth, p.getUI().computeHeight()));
         int a = this.barPosition;
-        this.barPosition = pos;
+        updateBarPosition(pos);
         fireSequenceEvent(new SequenceEvent(this, a, pos));
         self.repaint(new Rectangle(barPosition, 0, barWidth, p.getUI().computeHeight()));
     }
@@ -197,6 +212,24 @@ public class PianoRollLayerUI extends LayerUI<PianoRoll> {
 
     public BarStyle getBarStyle() {
         return barStyle;
+    }
+
+    /**
+     * シーケンサの移動と同期するスクロールペインを設定します.
+     *
+     * @param scrollPane
+     */
+    protected void setScrollPane(JScrollPane scrollPane) {
+        this.scrollPane = scrollPane;
+    }
+
+    /**
+     * シーケンサの移動と同期するスクロールペインを返します.
+     *
+     * @return
+     */
+    protected JScrollPane getScrollPane() {
+        return scrollPane;
     }
 
     @Override
