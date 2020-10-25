@@ -411,10 +411,20 @@ public class BasicPianoRollUI extends PianoRollUI {
     protected void drawKey(Graphics2D g2, Key key, int topY, int bottomY) {
         final int BW = p.getBeatWidth();
         final int BH = p.getBeatHeight();
+        Rectangle clipRect = g2.getClipBounds();
+        int startX = clipRect.x;
+        int endX = (clipRect.x + clipRect.width);
         int mx = 0;
         for (int j = 0; j < key.getMeasureCount(); j++) {
             Measure m = key.getMeasure(j);
             int bx = (BW * m.getBeatCount()) * j;
+            if ((bx + (m.getBeatCount() * p.getBeatWidth()) < startX) || (bx >= endX)) {
+                int nextMx = mx + m.getBeatCount() * BW;
+                g2.setColor(shouldHeighlightLine(mx) ? Color.magenta : Color.yellow);
+                g2.drawLine(mx, topY, mx, bottomY);
+                mx = nextMx;
+                continue;
+            }
             for (int k = 0; k < m.getBeatCount(); k++) {
                 int nextBx = bx + BW;
                 for (int L = 0; L < p.getBeatSplitCount(); L++) {
