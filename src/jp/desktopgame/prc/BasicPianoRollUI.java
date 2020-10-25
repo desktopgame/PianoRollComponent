@@ -14,6 +14,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.KeyAdapter;
 import java.awt.event.MouseAdapter;
@@ -26,6 +27,7 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.stream.Collectors;
 import javax.swing.JComponent;
+import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -312,11 +314,20 @@ public class BasicPianoRollUI extends PianoRollUI {
         PianoRollModel pModel = p.getModel();
         final int BW = p.getBeatWidth();
         final int BH = p.getBeatHeight();
+        Rectangle clipRect = g2.getClipBounds();
+        int startKey = clipRect.y;
+        int endKey = (clipRect.y + clipRect.height);
         int y = 0;
         Color c = g2.getColor();
         int index = 0;
         drawBackground(g2);
         for (int i = pModel.getKeyCount() - 1; i >= 0; i--) {
+            if (y < startKey || y >= endKey) {
+                int nextY = y + BH;
+                y = nextY;
+                index++;
+                continue;
+            }
             int nextY = y + BH;
             drawNotes(g2, pModel.getKey(index), y, nextY, false, null);
             y = nextY;
@@ -359,9 +370,18 @@ public class BasicPianoRollUI extends PianoRollUI {
         final int BW = p.getBeatWidth();
         final int BH = p.getBeatHeight();
         final int CW = computeWidth();
+        Rectangle clipRect = g2.getClipBounds();
+        int startKey = clipRect.y;
+        int endKey = (clipRect.y + clipRect.height);
         int index = 0;
         int y = 0;
         for (int i = pModel.getKeyCount() - 1; i >= 0; i--) {
+            if (y < startKey || y >= endKey) {
+                int nextY = y + BH;
+                y = nextY;
+                index++;
+                continue;
+            }
             int nextY = y + BH;
             int indexInBwTable = i % Keyboard.BLACK_WHITE_TABLE.length;
             if (Keyboard.BLACK_WHITE_TABLE[indexInBwTable] == Key.BLACK) {
