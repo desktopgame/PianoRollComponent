@@ -13,6 +13,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.plaf.ComponentUI;
@@ -26,10 +28,12 @@ public class BasicKeyboardUI extends ComponentUI {
 
     private Keyboard keyboard;
     private JScrollPane scrollPane;
+    private PropertyChangeHandler propertyChangeHandler;
     private AdjustmentHandler adjustmentHandler;
     private int offset;
 
     public BasicKeyboardUI() {
+        this.propertyChangeHandler = new PropertyChangeHandler();
         this.adjustmentHandler = new AdjustmentHandler();
     }
 
@@ -37,6 +41,7 @@ public class BasicKeyboardUI extends ComponentUI {
     public void installUI(JComponent c) {
         this.keyboard = (Keyboard) c;
         this.scrollPane = keyboard.getPianoRollScrollPane();
+        keyboard.addPropertyChangeListener(propertyChangeHandler);
         scrollPane.getVerticalScrollBar().addAdjustmentListener(adjustmentHandler);
     }
 
@@ -44,6 +49,7 @@ public class BasicKeyboardUI extends ComponentUI {
     public void uninstallUI(JComponent c) {
         this.keyboard = null;
         this.scrollPane = null;
+        keyboard.removePropertyChangeListener(propertyChangeHandler);
         scrollPane.getVerticalScrollBar().removeAdjustmentListener(adjustmentHandler);
     }
 
@@ -54,7 +60,7 @@ public class BasicKeyboardUI extends ComponentUI {
         PianoRollModel pModel = p.getModel();
         final int BW = p.getBeatWidth();
         final int BH = p.getBeatHeight();
-        final int LPS = 48;
+        final int LPS = 96;
         int y = -offset;
         Color c = g2.getColor();
         for (int i = pModel.getKeyCount() - 1; i >= 0; i--) {
@@ -72,10 +78,27 @@ public class BasicKeyboardUI extends ComponentUI {
                 g2.drawString(String.valueOf((k.getIndex() / 12) - 2), LPS / 2, nextY);
             }
             g2.setColor(Color.green);
-            g2.drawString(Keyboard.KEY_STRING_TABLE[indexInBwTable], 0, nextY - (p.getBeatHeight() / 2));
+            if (keyboard.isUseDrumMap() && keyboard.getDrumMap().containsKey(i)) {
+                g2.drawString(keyboard.getDrumMap().get(i), 0, nextY - (p.getBeatHeight() / 2));
+            } else {
+                g2.drawString(Keyboard.KEY_STRING_TABLE[indexInBwTable], 0, nextY - (p.getBeatHeight() / 2));
+            }
             g2.setColor(Color.black);
             g2.drawLine(0, y, LPS, y);
             y = nextY;
+        }
+    }
+
+    private class PropertyChangeHandler implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            String name = evt.getPropertyName();
+            Object ov = evt.getOldValue();
+            Object nv = evt.getNewValue();
+            if (name.equals("drumMap") || name.equals("useDrumMap")) {
+                keyboard.repaint();
+            }
         }
     }
 
