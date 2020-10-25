@@ -44,6 +44,7 @@ public class PianoRollLayerUI extends LayerUI<PianoRoll> {
     private EventListenerList listenerList;
     private List<Note> cachedNotes;
     private JScrollPane scrollPane;
+    private boolean syncScrollPane;
 
     public enum BarStyle {
         Loop,
@@ -103,7 +104,7 @@ public class PianoRollLayerUI extends LayerUI<PianoRoll> {
 
     private void updateBarPosition(int newBarPosition) {
         this.barPosition = newBarPosition;
-        if (scrollPane == null) {
+        if (scrollPane == null || !isSyncScrollPane()) {
             return;
         }
         JViewport vp = scrollPane.getViewport();
@@ -230,6 +231,14 @@ public class PianoRollLayerUI extends LayerUI<PianoRoll> {
      */
     protected JScrollPane getScrollPane() {
         return scrollPane;
+    }
+
+    public void setSyncScrollPane(boolean syncScrollPane) {
+        this.syncScrollPane = syncScrollPane;
+    }
+
+    public boolean isSyncScrollPane() {
+        return syncScrollPane;
     }
 
     @Override
