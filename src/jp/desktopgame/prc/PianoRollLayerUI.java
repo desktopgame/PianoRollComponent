@@ -191,6 +191,14 @@ public class PianoRollLayerUI extends LayerUI<PianoRoll> {
         return p;
     }
 
+    public void setBarStyle(BarStyle barStyle) {
+        this.barStyle = barStyle;
+    }
+
+    public BarStyle getBarStyle() {
+        return barStyle;
+    }
+
     @Override
     public void paint(Graphics g, JComponent c) {
         super.paint(g, c);
