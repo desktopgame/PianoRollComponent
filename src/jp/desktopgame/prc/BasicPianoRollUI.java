@@ -51,7 +51,7 @@ public class BasicPianoRollUI extends PianoRollUI {
     private int cursorX;
     private int cursorY;
     private List<Rectangle> ghostRects;
-    private Rectangle highlightKey;
+    private List<Rectangle> highlightRects;
 
     public BasicPianoRollUI() {
         this.propHandler = new PropertyChangeHandler();
@@ -63,7 +63,7 @@ public class BasicPianoRollUI extends PianoRollUI {
         this.noteResizeManager = createNoteResizeManager();
         this.rectSelectManager = new RectangleSelectManager(this);
         this.ghostRects = new ArrayList<>();
-        this.highlightKey = new Rectangle();
+        this.highlightRects = new ArrayList<>();
     }
 
     protected NoteDragManager createNoteDragManager() {
@@ -375,6 +375,7 @@ public class BasicPianoRollUI extends PianoRollUI {
         int endKey = (clipRect.y + clipRect.height);
         int index = 0;
         int y = 0;
+        highlightRects.clear();
         for (int i = pModel.getKeyCount() - 1; i >= 0; i--) {
             if (y < startKey || y >= endKey) {
                 int nextY = y + BH;
@@ -389,12 +390,22 @@ public class BasicPianoRollUI extends PianoRollUI {
             } else {
                 g2.setColor(Color.lightGray);
             }
-            if (!noteDragManager.getTargets().isEmpty() && cursorY >= y && cursorY < nextY) {
+            final int _i = i;
+            final int dragDiffX = noteDragManager.getCurrentX() - noteDragManager.getBaseX();
+            final int dragDiffY = noteDragManager.getCurrentY() - noteDragManager.getBaseY();
+            if (!noteDragManager.getTargets().isEmpty() && noteDragManager.getTargets().stream().anyMatch((note) -> {
+                Rectangle rect = getNoteRect(note);
+                rect.x += dragDiffX;
+                rect.y += dragDiffY;
+                return ((pModel.getKeyCount() - (rect.y / p.getBeatHeight())) - 1) == _i;
+            })) {
                 g2.setColor(Color.CYAN);
+                Rectangle highlightKey = new Rectangle();
                 highlightKey.x = 0;
                 highlightKey.y = y;
                 highlightKey.width = CW;
                 highlightKey.height = nextY - y;
+                highlightRects.add(highlightKey);
             }
             g2.fillRect(0, y, CW, nextY - y);
             drawKey(g2, pModel.getKey(index), y, nextY);
@@ -657,8 +668,8 @@ public class BasicPianoRollUI extends PianoRollUI {
                 return;
             }
             if (noteDragManager.hasFocus()) {
-                p.repaint(highlightKey);
-                highlightKey = new Rectangle();
+                highlightRects.forEach(p::repaint);
+                highlightRects.clear();
                 noteDragManager.stop();
                 p.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 return;
@@ -698,7 +709,7 @@ public class BasicPianoRollUI extends PianoRollUI {
             if (noteDragManager.hasFocus()) {
                 noteDragManager.move(e.getX(), e.getY());
                 repaintGhostRects();
-                p.repaint(highlightKey);
+                highlightRects.forEach(p::repaint);
             } else if (noteResizeManager.hasFocus()) {
                 noteResizeManager.resize(e.getX(), p.getBeatWidth());
             }
