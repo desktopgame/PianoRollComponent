@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.swing.JComponent;
 import javax.swing.JLayer;
-import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.Timer;
@@ -37,6 +36,7 @@ public class PianoRollLayerUI extends LayerUI<PianoRoll> {
     private PianoRoll p;
     private int barPosition;
     private int barWidth;
+    private int barStep;
     private Color barColor;
     private BarStyle barStyle;
     private Timer timer;
@@ -45,6 +45,7 @@ public class PianoRollLayerUI extends LayerUI<PianoRoll> {
     private List<Note> cachedNotes;
     private JScrollPane scrollPane;
     private boolean syncScrollPane;
+    private long onLastTick;
 
     public enum BarStyle {
         Loop,
@@ -63,6 +64,25 @@ public class PianoRollLayerUI extends LayerUI<PianoRoll> {
 
     private void onTime(ActionEvent e) {
         self.repaint(new Rectangle(barPosition, 0, barWidth, p.getUI().computeHeight()));
+        for (int i = 0; i < barStep; i++) {
+            doStep();
+        }
+        if (barPosition < p.getUI().computeWidth()) {
+            return;
+        }
+        if (this.barStyle == BarStyle.Loop) {
+            updateBarPosition(0);
+            fireSequenceEvent(new SequenceEvent(this, barPosition, 0));
+        } else {
+            self.repaint(new Rectangle(barPosition, 0, barWidth, p.getUI().computeHeight()));
+            updateBarPosition(0);
+            fireSequenceEvent(new SequenceEvent(this, barPosition, 0));
+            timer.stop();
+            self.repaint(new Rectangle(barPosition, 0, barWidth, p.getUI().computeHeight()));
+        }
+    }
+
+    private void doStep() {
         updateBarPosition(barPosition + 1);
         fireSequenceEvent(new SequenceEvent(this, barPosition - 1, barPosition));
         int index = p.getUI().getRelativeBeatIndex(barPosition);
@@ -87,23 +107,16 @@ public class PianoRollLayerUI extends LayerUI<PianoRoll> {
         cachedNotes.addAll(notes);
         cachedNotes = new ArrayList<>(cachedNotes.stream().distinct().collect(Collectors.toList()));
         self.repaint(new Rectangle(barPosition, 0, barWidth, p.getUI().computeHeight()));
-        if (barPosition < p.getUI().computeWidth()) {
-            return;
-        }
-        if (this.barStyle == BarStyle.Loop) {
-            updateBarPosition(0);
-            fireSequenceEvent(new SequenceEvent(this, barPosition, 0));
-        } else {
-            self.repaint(new Rectangle(barPosition, 0, barWidth, p.getUI().computeHeight()));
-            updateBarPosition(0);
-            fireSequenceEvent(new SequenceEvent(this, barPosition, 0));
-            timer.stop();
-            self.repaint(new Rectangle(barPosition, 0, barWidth, p.getUI().computeHeight()));
-        }
     }
 
     private void updateBarPosition(int newBarPosition) {
         this.barPosition = newBarPosition;
+        if (newBarPosition % p.getBeatWidth() == 0) {
+            long t = System.currentTimeMillis();
+            long diff = (t - this.onLastTick);
+            //System.out.printf("%d %d\n", diff, (long) (updateRate.secPerBeat * 1000f));
+            this.onLastTick = t;
+        }
         if (scrollPane == null || !isSyncScrollPane()) {
             return;
         }
@@ -173,6 +186,12 @@ public class PianoRollLayerUI extends LayerUI<PianoRoll> {
     public void setSequenceUpdateRate(UpdateRate updateRate) {
         int bw = p.getBeatWidth();
         int delay = updateRate.computeTimerDelay(bw);
+        int step = delay;
+        this.barStep = 1;
+        while (delay < 32) {
+            delay += step;
+            this.barStep++;
+        }
         timer.setInitialDelay(0);
         timer.setDelay(delay);
         this.updateRate = updateRate;
@@ -191,6 +210,7 @@ public class PianoRollLayerUI extends LayerUI<PianoRoll> {
      * シーケンスの再生を開始します.
      */
     public void playSequence() {
+        this.onLastTick = System.currentTimeMillis();
         timer.setRepeats(true);
         timer.setInitialDelay(0);
         timer.start();
