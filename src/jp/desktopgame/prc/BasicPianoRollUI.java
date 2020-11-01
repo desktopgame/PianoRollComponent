@@ -729,7 +729,7 @@ public class BasicPianoRollUI extends PianoRollUI {
                     repaintGhostRects();
                     highlightRects.forEach(p::repaint);
                 } else {
-                    if (isOnSnapBorder(baseNote, diffX) && !snapLocked) {
+                    if (isOnSnapBorder(baseNote, diffX, false, false) && !snapLocked) {
                         this.snapLockPos = e.getX();
                         this.snapLocked = true;
                     } else {
@@ -753,7 +753,8 @@ public class BasicPianoRollUI extends PianoRollUI {
                 } else {
                     if (!snapLocked) {
                         noteResizeManager.resize(e.getX(), p.getBeatWidth());
-                        if (isOnSnapBorder(baseNote, 0) && !snapLocked) {
+                        NoteResizeManager.Type ty = noteResizeManager.getType();
+                        if (isOnSnapBorder(baseNote, 0, ty != NoteResizeManager.Type.Move, ty == NoteResizeManager.Type.Move) && !snapLocked) {
                             this.snapLockPos = e.getX();
                             this.snapLocked = true;
                         }
@@ -771,7 +772,7 @@ public class BasicPianoRollUI extends PianoRollUI {
             updateCursorPos(e);
         }
 
-        private boolean isOnSnapBorder(Note baseNote, int diffX) {
+        private boolean isOnSnapBorder(Note baseNote, int diffX, boolean ignoreLeft, boolean ignoreRight) {
             PianoRollModel pModel = p.getModel();
             Rectangle baseRect = getNoteRect(baseNote);
             int baseOffset = baseRect.x + diffX;
@@ -792,10 +793,10 @@ public class BasicPianoRollUI extends PianoRollUI {
             });
             repaintSnap();
             boolean ret = false;
-            if (baseOffset % (p.getBeatWidth() / p.getBeatSplitCount()) == 0) {
+            if (!ignoreLeft && (baseOffset % (p.getBeatWidth() / p.getBeatSplitCount()) == 0)) {
                 BasicPianoRollUI.this.snapX = baseOffset;
                 ret = true;
-            } else if (baseEnd % (p.getBeatWidth() / p.getBeatSplitCount()) == 0) {
+            } else if (!ignoreRight && baseEnd % (p.getBeatWidth() / p.getBeatSplitCount()) == 0) {
                 BasicPianoRollUI.this.snapX = baseEnd;
                 ret = true;
             } else if (touchAnotherNote) {
