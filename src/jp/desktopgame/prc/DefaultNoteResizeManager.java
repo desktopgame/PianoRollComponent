@@ -28,6 +28,7 @@ public class DefaultNoteResizeManager implements NoteResizeManager {
     private int currentX;
     private boolean hasFocus;
     private EventListenerList listenerList;
+    private Note baseNote;
 
     public DefaultNoteResizeManager() {
         this.notes = new ArrayList<>();
@@ -48,11 +49,15 @@ public class DefaultNoteResizeManager implements NoteResizeManager {
     @Override
     public void touch(Note note) {
         this.notes.add(note);
+        this.baseNote = note;
     }
 
     @Override
     public void touch(Collection<? extends Note> notes) {
         this.notes.addAll(notes);
+        if (!notes.isEmpty()) {
+            this.baseNote = this.notes.get(this.notes.size() - 1);
+        }
     }
 
     @Override
@@ -108,10 +113,16 @@ public class DefaultNoteResizeManager implements NoteResizeManager {
         this.baseX = 0;
         this.currentX = 0;
         this.hasFocus = false;
+        this.baseNote = null;
         NoteResizeEvent e = new NoteResizeEvent(this);
         for (NoteResizeListener listener : listenerList.getListeners(NoteResizeListener.class)) {
             listener.resizeEnd(e);
         }
+    }
+
+    @Override
+    public Note getBaseNote() {
+        return baseNote;
     }
 
     @Override

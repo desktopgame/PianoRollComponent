@@ -86,7 +86,7 @@ public class PianoRoll extends JComponent implements Scrollable {
         setBeatWidth(96);
         setBeatHeight(24);
         setClickSnapLimit(3);
-        setDragSnapLimit(3);
+        setDragSnapLimit(5);
         setModel(new DefaultPianoRollModel(12 * 11, 4, 4));
         updateUI();
     }

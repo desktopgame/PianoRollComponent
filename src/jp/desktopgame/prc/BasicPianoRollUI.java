@@ -732,7 +732,25 @@ public class BasicPianoRollUI extends PianoRollUI {
                     highlightRects.forEach(p::repaint);
                 }
             } else if (noteResizeManager.hasFocus()) {
-                noteResizeManager.resize(e.getX(), p.getBeatWidth());
+                int diffX = (noteResizeManager.getCurrentX() - noteResizeManager.getBaseX());
+                Note baseNote = noteResizeManager.getBaseNote();
+                if (baseNote == null) {
+                    noteResizeManager.resize(e.getX(), p.getBeatWidth());
+                } else {
+                    Rectangle baseRect = getNoteRect(baseNote);
+                    int baseOffset = baseRect.x + diffX;
+                    int snapOver = baseOffset % (p.getBeatWidth() / p.getBeatSplitCount());
+                    int snapOver2 = (baseOffset + baseRect.width) % (p.getBeatWidth() / p.getBeatSplitCount());
+                    if ((snapOver == 0 || snapOver2 == 0) && !snapLocked) {
+                        this.snapLockPos = e.getX();
+                        this.snapLocked = true;
+                    } else {
+                        if (!snapLocked || Math.abs(snapLockPos - e.getX()) > p.getDragSnapLimit()) {
+                            noteResizeManager.resize(e.getX(), p.getBeatWidth());
+                            this.snapLocked = false;
+                        }
+                    }
+                }
             }
             updateCursorPos(e);
         }
