@@ -585,6 +585,8 @@ public class BasicPianoRollUI extends PianoRollUI {
 
         private DefaultNoteResizeManager.Type resizeType;
         private boolean rectSelect;
+        private boolean snapLocked;
+        private int snapLockPos;
 
         public MouseHandler() {
         }
@@ -654,6 +656,7 @@ public class BasicPianoRollUI extends PianoRollUI {
             if (!p.isEditable()) {
                 return;
             }
+            this.snapLocked = false;
             if (rectSelect) {
                 repaintSelectArea();
                 rectSelectManager.stop();
@@ -705,9 +708,29 @@ public class BasicPianoRollUI extends PianoRollUI {
                 return;
             }
             if (noteDragManager.hasFocus()) {
-                noteDragManager.move(e.getX(), e.getY());
-                repaintGhostRects();
-                highlightRects.forEach(p::repaint);
+                int diffX = (noteDragManager.getCurrentX() - noteDragManager.getBaseX());
+                Note baseNote = noteDragManager.getBaseNote();
+                if (baseNote == null) {
+                    noteDragManager.move(e.getX(), e.getY());
+                    repaintGhostRects();
+                    highlightRects.forEach(p::repaint);
+                } else {
+                    Rectangle baseRect = getNoteRect(baseNote);
+                    int baseOffset = baseRect.x + diffX;
+                    int snapOver = baseOffset % (p.getBeatWidth() / p.getBeatSplitCount());
+                    if (snapOver == 0 && !snapLocked) {
+                        this.snapLockPos = e.getX();
+                        this.snapLocked = true;
+                    } else {
+                        if (!snapLocked || Math.abs(snapLockPos - e.getX()) > p.getDragSnapLimit()) {
+                            noteDragManager.move(e.getX(), e.getY());
+                            this.snapLocked = false;
+                        }
+                    }
+                    //noteDragManager.move(e.getX(), e.getY());
+                    repaintGhostRects();
+                    highlightRects.forEach(p::repaint);
+                }
             } else if (noteResizeManager.hasFocus()) {
                 noteResizeManager.resize(e.getX(), p.getBeatWidth());
             }

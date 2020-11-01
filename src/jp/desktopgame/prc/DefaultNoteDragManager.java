@@ -30,6 +30,7 @@ public class DefaultNoteDragManager implements NoteDragManager {
     private int currentY;
     private boolean hasFocus;
     private EventListenerList listenerList;
+    private Note baseNote;
 
     public DefaultNoteDragManager(PianoRollUI ui) {
         this.ui = ui;
@@ -50,11 +51,15 @@ public class DefaultNoteDragManager implements NoteDragManager {
     @Override
     public void touch(Note note) {
         this.dragTargets.add(note);
+        this.baseNote = dragTargets.get(dragTargets.size() - 1);
     }
 
     @Override
     public void touch(Collection<? extends Note> notes) {
         this.dragTargets.addAll(notes);
+        if (!dragTargets.isEmpty()) {
+            this.baseNote = dragTargets.get(dragTargets.size() - 1);
+        }
     }
 
     @Override
@@ -102,10 +107,16 @@ public class DefaultNoteDragManager implements NoteDragManager {
         }
         dragTargets.clear();
         this.hasFocus = false;
+        this.baseNote = null;
         NoteDragEvent e = new NoteDragEvent(this);
         for (NoteDragListener listener : listenerList.getListeners(NoteDragListener.class)) {
             listener.dragEnd(e);
         }
+    }
+
+    @Override
+    public Note getBaseNote() {
+        return baseNote;
     }
 
     @Override

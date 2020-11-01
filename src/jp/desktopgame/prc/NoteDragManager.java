@@ -26,6 +26,8 @@ public interface NoteDragManager extends NoteEditManager {
 
     public void stop();
 
+    public Note getBaseNote();
+
     public List<Note> getTargets();
 
     public boolean hasFocus();
