@@ -715,10 +715,7 @@ public class BasicPianoRollUI extends PianoRollUI {
                     repaintGhostRects();
                     highlightRects.forEach(p::repaint);
                 } else {
-                    Rectangle baseRect = getNoteRect(baseNote);
-                    int baseOffset = baseRect.x + diffX;
-                    int snapOver = baseOffset % (p.getBeatWidth() / p.getBeatSplitCount());
-                    if (snapOver == 0 && !snapLocked) {
+                    if (isOnSnapBorder(baseNote, diffX) && !snapLocked) {
                         this.snapLockPos = e.getX();
                         this.snapLocked = true;
                     } else {
@@ -737,11 +734,7 @@ public class BasicPianoRollUI extends PianoRollUI {
                 if (baseNote == null) {
                     noteResizeManager.resize(e.getX(), p.getBeatWidth());
                 } else {
-                    Rectangle baseRect = getNoteRect(baseNote);
-                    int baseOffset = baseRect.x + diffX;
-                    int snapOver = baseOffset % (p.getBeatWidth() / p.getBeatSplitCount());
-                    int snapOver2 = (baseOffset + baseRect.width) % (p.getBeatWidth() / p.getBeatSplitCount());
-                    if ((snapOver == 0 || snapOver2 == 0) && !snapLocked) {
+                    if (isOnSnapBorder(baseNote, diffX) && !snapLocked) {
                         this.snapLockPos = e.getX();
                         this.snapLocked = true;
                     } else {
@@ -753,6 +746,14 @@ public class BasicPianoRollUI extends PianoRollUI {
                 }
             }
             updateCursorPos(e);
+        }
+
+        private boolean isOnSnapBorder(Note baseNote, int diffX) {
+            Rectangle baseRect = getNoteRect(baseNote);
+            int baseOffset = baseRect.x + diffX;
+            int snapOver = baseOffset % (p.getBeatWidth() / p.getBeatSplitCount());
+            int snapOver2 = (baseOffset + baseRect.width) % (p.getBeatWidth() / p.getBeatSplitCount());
+            return snapOver == 0 && snapOver2 == 0;
         }
 
         @Override
