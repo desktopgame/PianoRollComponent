@@ -782,10 +782,10 @@ public class BasicPianoRollUI extends PianoRollUI {
                     .stream()
                     .filter((e) -> e != baseNote)
                     .map((note) -> getNoteRect(note)).anyMatch((rect) -> {
-                if (baseOffset == rect.x || baseEnd == rect.x) {
+                if ((!ignoreLeft && baseOffset == rect.x) || (!ignoreRight && baseEnd == rect.x)) {
                     rectP.x = rect.x;
                     return true;
-                } else if (baseOffset == rect.x + rect.width || baseEnd == rect.x + rect.width) {
+                } else if ((!ignoreLeft && baseOffset == rect.x + rect.width) || (!ignoreRight && baseEnd == rect.x + rect.width)) {
                     rectP.x = rect.x + rect.width;
                     return true;
                 }
