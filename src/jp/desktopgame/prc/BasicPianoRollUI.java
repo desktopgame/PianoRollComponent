@@ -14,6 +14,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.KeyAdapter;
 import java.awt.event.MouseAdapter;
@@ -50,6 +51,7 @@ public class BasicPianoRollUI extends PianoRollUI {
     private int cursorY;
     private List<Rectangle> ghostRects;
     private List<Rectangle> highlightRects;
+    private int snapX;
 
     public BasicPianoRollUI() {
         this.propHandler = new PropertyChangeHandler();
@@ -336,6 +338,10 @@ public class BasicPianoRollUI extends PianoRollUI {
         Rectangle selectArea = rectSelectManager.getAreaRect();
         g2.draw(selectArea);
         drawOnionSkin(g2);
+        if (snapX > 0) {
+            g2.setColor(Color.red);
+            g2.drawLine(snapX, 0, snapX, clipRect.height);
+        }
         g2.setColor(c);
     }
 
@@ -353,6 +359,10 @@ public class BasicPianoRollUI extends PianoRollUI {
             p.repaint(rect);
         }
         ghostRects.clear();
+    }
+
+    private void repaintSnap() {
+        p.repaint(new Rectangle(snapX, 0, 1, p.getHeight()));
     }
 
     private boolean shouldHeighlightLine(int x) {
@@ -657,6 +667,10 @@ public class BasicPianoRollUI extends PianoRollUI {
                 return;
             }
             this.snapLocked = false;
+            this.snapLockPos = -1;
+            repaintSnap();
+            BasicPianoRollUI.this.snapX = -1;
+            repaintSnap();
             if (rectSelect) {
                 repaintSelectArea();
                 rectSelectManager.stop();
@@ -722,6 +736,9 @@ public class BasicPianoRollUI extends PianoRollUI {
                         if (!snapLocked || Math.abs(snapLockPos - e.getX()) > p.getDragSnapLimit()) {
                             noteDragManager.move(e.getX(), e.getY());
                             this.snapLocked = false;
+                            repaintSnap();
+                            BasicPianoRollUI.this.snapX = 0;
+                            repaintSnap();
                         }
                     }
                     //noteDragManager.move(e.getX(), e.getY());
@@ -734,13 +751,19 @@ public class BasicPianoRollUI extends PianoRollUI {
                 if (baseNote == null) {
                     noteResizeManager.resize(e.getX(), p.getBeatWidth());
                 } else {
-                    if (isOnSnapBorder(baseNote, diffX) && !snapLocked) {
-                        this.snapLockPos = e.getX();
-                        this.snapLocked = true;
+                    if (!snapLocked) {
+                        noteResizeManager.resize(e.getX(), p.getBeatWidth());
+                        if (isOnSnapBorder(baseNote, 0) && !snapLocked) {
+                            this.snapLockPos = e.getX();
+                            this.snapLocked = true;
+                        }
                     } else {
-                        if (!snapLocked || Math.abs(snapLockPos - e.getX()) > p.getDragSnapLimit()) {
+                        if (Math.abs(snapLockPos - e.getX()) > p.getDragSnapLimit()) {
                             noteResizeManager.resize(e.getX(), p.getBeatWidth());
                             this.snapLocked = false;
+                            repaintSnap();
+                            BasicPianoRollUI.this.snapX = 0;
+                            repaintSnap();
                         }
                     }
                 }
@@ -749,11 +772,38 @@ public class BasicPianoRollUI extends PianoRollUI {
         }
 
         private boolean isOnSnapBorder(Note baseNote, int diffX) {
+            PianoRollModel pModel = p.getModel();
             Rectangle baseRect = getNoteRect(baseNote);
             int baseOffset = baseRect.x + diffX;
-            int snapOver = baseOffset % (p.getBeatWidth() / p.getBeatSplitCount());
-            int snapOver2 = (baseOffset + baseRect.width) % (p.getBeatWidth() / p.getBeatSplitCount());
-            return snapOver == 0 && snapOver2 == 0;
+            int baseEnd = baseOffset + baseRect.width;
+            Point rectP = new Point();
+            boolean touchAnotherNote = pModel.getAllNotes()
+                    .stream()
+                    .filter((e) -> e != baseNote)
+                    .map((note) -> getNoteRect(note)).anyMatch((rect) -> {
+                if (baseOffset == rect.x || baseEnd == rect.x) {
+                    rectP.x = rect.x;
+                    return true;
+                } else if (baseOffset == rect.x + rect.width || baseEnd == rect.x + rect.width) {
+                    rectP.x = rect.x + rect.width;
+                    return true;
+                }
+                return false;
+            });
+            repaintSnap();
+            boolean ret = false;
+            if (baseOffset % (p.getBeatWidth() / p.getBeatSplitCount()) == 0) {
+                BasicPianoRollUI.this.snapX = baseOffset;
+                ret = true;
+            } else if (baseEnd % (p.getBeatWidth() / p.getBeatSplitCount()) == 0) {
+                BasicPianoRollUI.this.snapX = baseEnd;
+                ret = true;
+            } else if (touchAnotherNote) {
+                BasicPianoRollUI.this.snapX = rectP.x;
+                ret = true;
+            }
+            repaintSnap();
+            return ret;
         }
 
         @Override
