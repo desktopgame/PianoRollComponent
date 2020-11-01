@@ -340,7 +340,7 @@ public class BasicPianoRollUI extends PianoRollUI {
         drawOnionSkin(g2);
         if (snapX > 0) {
             g2.setColor(Color.red);
-            g2.drawLine(snapX, 0, snapX, clipRect.height);
+            g2.drawLine(snapX, 0, snapX, computeHeight());
         }
         g2.setColor(c);
     }
@@ -362,7 +362,7 @@ public class BasicPianoRollUI extends PianoRollUI {
     }
 
     private void repaintSnap() {
-        p.repaint(new Rectangle(snapX, 0, 1, p.getHeight()));
+        p.repaint(new Rectangle(snapX, 0, 1, computeHeight()));
     }
 
     private boolean shouldHeighlightLine(int x) {
