@@ -71,7 +71,7 @@ public class PianoRoll extends JComponent implements Scrollable {
     private int beatWidth;
     private int beatHeight;
     private int beatSplitCount;
-    private int snapLimit;
+    private int clickSnapLimit;
     private boolean editable;
     private Phrase clipboard;
     private Optional<PianoRollGroup> group;
@@ -84,7 +84,7 @@ public class PianoRoll extends JComponent implements Scrollable {
         setBeatSplitCount(4);
         setBeatWidth(96);
         setBeatHeight(24);
-        setSnapLimit(3);
+        setClickSnapLimit(3);
         setModel(new DefaultPianoRollModel(12 * 11, 4, 4));
         updateUI();
     }
@@ -220,12 +220,12 @@ public class PianoRoll extends JComponent implements Scrollable {
     /**
      * スナップが起動する範囲を設定します.
      *
-     * @param snapLimit
+     * @param clickSnapLimit
      */
-    public void setSnapLimit(int snapLimit) {
-        int sl = this.snapLimit;
-        this.snapLimit = snapLimit;
-        this.firePropertyChange("snapLimit", sl, this.snapLimit);
+    public void setClickSnapLimit(int clickSnapLimit) {
+        int sl = this.clickSnapLimit;
+        this.clickSnapLimit = clickSnapLimit;
+        this.firePropertyChange("clickSnapLimit", sl, this.clickSnapLimit);
     }
 
     /**
@@ -233,8 +233,8 @@ public class PianoRoll extends JComponent implements Scrollable {
      *
      * @return
      */
-    public int getSnapLimit() {
-        return this.snapLimit;
+    public int getClickSnapLimit() {
+        return this.clickSnapLimit;
     }
 
     /**

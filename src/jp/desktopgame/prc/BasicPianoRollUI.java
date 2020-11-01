@@ -14,7 +14,6 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.KeyAdapter;
 import java.awt.event.MouseAdapter;
@@ -27,7 +26,6 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.stream.Collectors;
 import javax.swing.JComponent;
-import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -227,7 +225,7 @@ public class BasicPianoRollUI extends PianoRollUI {
     private Optional<Note> generateNoteAt(int x, int y, int offset, float length) {
         int section = p.getBeatWidth() / p.getBeatSplitCount();
         for (int i = 0; i < p.getBeatSplitCount(); i++) {
-            if (nearEq(section * i, offset, p.getSnapLimit())) {
+            if (nearEq(section * i, offset, p.getClickSnapLimit())) {
                 offset = section * i;
                 break;
             }
@@ -358,7 +356,7 @@ public class BasicPianoRollUI extends PianoRollUI {
     }
 
     private boolean shouldHeighlightLine(int x) {
-        return nearEq(x, cursorX, p.getSnapLimit());
+        return nearEq(x, cursorX, p.getClickSnapLimit());
     }
 
     private boolean nearEq(int a, int b, int limit) {
@@ -556,7 +554,7 @@ public class BasicPianoRollUI extends PianoRollUI {
                 updatePrefSize();
             } else if (k.equals("visibleMeasureCount")) {
                 updatePrefSize();
-            } else if (k.equals("beatWidth") || k.equals("beatHeight") || k.equals("beatSplitCount") || k.equals("snapLimit")) {
+            } else if (k.equals("beatWidth") || k.equals("beatHeight") || k.equals("beatSplitCount") || k.equals("clickSnapLimit")) {
                 updatePrefSize();
                 p.repaint();
             } else if (k.equals("group")) {
