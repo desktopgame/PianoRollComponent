@@ -164,4 +164,8 @@ public class Keyboard extends JComponent {
     public boolean isHighlight(int height) {
         return getUI().isHighlight(height);
     }
+
+    public void resetHighlight() {
+        getUI().resetHighlight();
+    }
 }
