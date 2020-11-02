@@ -156,4 +156,12 @@ public class Keyboard extends JComponent {
     public JScrollPane getPianoRollScrollPane() {
         return this.scrollPane;
     }
+
+    public void setHighlight(int height, boolean b) {
+        getUI().setHighlight(height, b);
+    }
+
+    public boolean isHighlight(int height) {
+        return getUI().isHighlight(height);
+    }
 }

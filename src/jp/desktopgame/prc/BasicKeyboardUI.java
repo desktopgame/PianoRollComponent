@@ -15,26 +15,28 @@ import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
-import javax.swing.plaf.ComponentUI;
 
 /**
  * KeyboardUIの基本L&F実装です.
  *
  * @author desktopgame
  */
-public class BasicKeyboardUI extends ComponentUI {
+public class BasicKeyboardUI extends KeyboardUI {
 
     private Keyboard keyboard;
     private JScrollPane scrollPane;
     private PropertyChangeHandler propertyChangeHandler;
     private AdjustmentHandler adjustmentHandler;
     private int offset;
+    private boolean[] bitmap;
 
     public BasicKeyboardUI() {
         this.propertyChangeHandler = new PropertyChangeHandler();
         this.adjustmentHandler = new AdjustmentHandler();
+        this.bitmap = null;
     }
 
     @Override
@@ -43,6 +45,7 @@ public class BasicKeyboardUI extends ComponentUI {
         this.scrollPane = keyboard.getPianoRollScrollPane();
         keyboard.addPropertyChangeListener(propertyChangeHandler);
         scrollPane.getVerticalScrollBar().addAdjustmentListener(adjustmentHandler);
+        this.bitmap = null;
     }
 
     @Override
@@ -68,9 +71,9 @@ public class BasicKeyboardUI extends ComponentUI {
             int nextY = y + BH;
             int indexInBwTable = i % Keyboard.BLACK_WHITE_TABLE.length;
             if (Keyboard.BLACK_WHITE_TABLE[indexInBwTable] == Key.BLACK) {
-                g2.setColor(Color.darkGray);
+                g2.setColor(!isHighlightKey(i) ? Color.darkGray : Color.ORANGE);
             } else {
-                g2.setColor(Color.lightGray);
+                g2.setColor(!isHighlightKey(i) ? Color.lightGray : Color.ORANGE);
             }
             g2.fillRect(0, y, LPS, nextY - y);
             if (Keyboard.KEY_STRING_TABLE[indexInBwTable].equals("C")) {
@@ -87,6 +90,51 @@ public class BasicKeyboardUI extends ComponentUI {
             g2.drawLine(0, y, LPS, y);
             y = nextY;
         }
+    }
+
+    @Override
+    public void setHighlight(int height, boolean b) {
+        getBitmap()[height] = b;
+        keyboard.repaint();
+    }
+
+    @Override
+    public boolean isHighlight(int height) {
+        return getBitmap()[height];
+    }
+
+    @Override
+    public void resetHighlight() {
+        if (getBitmap() != null) {
+            Arrays.fill(getBitmap(), false);
+            keyboard.repaint();
+        }
+    }
+
+    private boolean isHighlightKey(int height) {
+        boolean[] bm = getBitmap();
+        if (height >= bm.length) {
+            return false;
+        }
+        return bm[height];
+    }
+
+    private boolean[] getBitmap() {
+        PianoRoll p = keyboard.getPianoRoll();
+        PianoRollModel pModel = p.getModel();
+        if (pModel == null && bitmap == null) {
+            this.bitmap = new boolean[12 * 8];
+        }
+        if (pModel != null && bitmap == null) {
+            this.bitmap = new boolean[pModel.getKeyCount()];
+        } else {
+            if (pModel != null && pModel.getKeyCount() > bitmap.length) {
+                boolean[] buf = new boolean[pModel.getKeyCount()];
+                System.arraycopy(bitmap, 0, buf, 0, bitmap.length);
+                this.bitmap = buf;
+            }
+        }
+        return bitmap;
     }
 
     private class PropertyChangeHandler implements PropertyChangeListener {

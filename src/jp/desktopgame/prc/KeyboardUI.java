@@ -17,4 +17,9 @@ import javax.swing.plaf.ComponentUI;
  */
 public abstract class KeyboardUI extends ComponentUI {
 
+    public abstract void setHighlight(int height, boolean b);
+
+    public abstract boolean isHighlight(int height);
+
+    public abstract void resetHighlight();
 }
