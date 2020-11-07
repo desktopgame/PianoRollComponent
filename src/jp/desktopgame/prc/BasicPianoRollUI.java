@@ -321,6 +321,7 @@ public class BasicPianoRollUI extends PianoRollUI {
         Color c = g2.getColor();
         int index = 0;
         drawBackground(g2);
+        drawOnionSkin(g2);
         for (int i = pModel.getKeyCount() - 1; i >= 0; i--) {
             if (y < startKey || y >= endKey) {
                 int nextY = y + BH;
@@ -337,7 +338,6 @@ public class BasicPianoRollUI extends PianoRollUI {
         g2.setColor(Color.blue);
         Rectangle selectArea = rectSelectManager.getAreaRect();
         g2.draw(selectArea);
-        drawOnionSkin(g2);
         if (snapX > 0) {
             g2.setColor(Color.red);
             g2.drawLine(snapX, 0, snapX, computeHeight());
