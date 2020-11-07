@@ -33,12 +33,12 @@ public class MIDI {
     /**
      * General MIDI準拠のドラムマップです. オクターブから名前を引きます。
      */
-    public static Map<Integer, String> DRUM_MAP;
+    public static final Map<Integer, String> DRUM_MAP;
 
     /**
      * General MIDI準拠のドラムマップです. 名前からオクターブを引きます。
      */
-    public static Map<String, Integer> DRUM_RMAP;
+    public static final Map<String, Integer> DRUM_RMAP;
 
     static {
         DRUM_MAP = new HashMap<>();
