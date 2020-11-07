@@ -62,6 +62,42 @@ public class PianoRollLayerUI extends LayerUI<PianoRoll> {
         this.cachedNotes = new ArrayList<>();
     }
 
+    /**
+     * 先頭までスクロールします.
+     *
+     * @param aSynScrollPane
+     */
+    public void seekToBegin(boolean aSynScrollPane) {
+        boolean a = this.syncScrollPane;
+        if (!a && aSynScrollPane) {
+            setSyncScrollPane(true);
+        }
+        self.repaint(new Rectangle(barPosition, 0, barWidth, p.getUI().computeHeight()));
+        updateBarPosition(0);
+        self.repaint(new Rectangle(barPosition, 0, barWidth, p.getUI().computeHeight()));
+        if (!a && aSynScrollPane) {
+            setSyncScrollPane(false);
+        }
+    }
+
+    /**
+     * 末尾までスクロールします.
+     *
+     * @param aSynScrollPane
+     */
+    public void seekToEnd(boolean aSynScrollPane) {
+        boolean a = this.syncScrollPane;
+        if (!a && aSynScrollPane) {
+            setSyncScrollPane(true);
+        }
+        self.repaint(new Rectangle(barPosition, 0, barWidth, p.getUI().computeHeight()));
+        updateBarPosition(p.getUI().computeWidth());
+        self.repaint(new Rectangle(barPosition, 0, barWidth, p.getUI().computeHeight()));
+        if (!a && aSynScrollPane) {
+            setSyncScrollPane(false);
+        }
+    }
+
     private void onTime(ActionEvent e) {
         self.repaint(new Rectangle(barPosition, 0, barWidth, p.getUI().computeHeight()));
         for (int i = 0; i < barStep; i++) {
