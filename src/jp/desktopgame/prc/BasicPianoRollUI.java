@@ -8,7 +8,9 @@
  */
 package jp.desktopgame.prc;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -342,6 +344,7 @@ public class BasicPianoRollUI extends PianoRollUI {
             g2.setColor(Color.red);
             g2.drawLine(snapX, 0, snapX, computeHeight());
         }
+        drawRegions(g2);
         g2.setColor(c);
     }
 
@@ -371,6 +374,22 @@ public class BasicPianoRollUI extends PianoRollUI {
 
     private boolean nearEq(int a, int b, int limit) {
         return Math.abs(Math.abs(a) - Math.abs(b)) < limit;
+    }
+
+    private void drawRegions(Graphics2D g2) {
+        AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f);
+        Composite comp = g2.getComposite();
+        g2.setComposite(ac);
+        for (Region region : p.getRegionManager().getRegions()) {
+            drawRegion(g2, region);
+        }
+        g2.setComposite(comp);
+    }
+
+    protected void drawRegion(Graphics2D g2, Region region) {
+        Rectangle rect = new Rectangle(region.getStartOffset(), 0, region.getLength(), computeHeight());
+        g2.setColor(Color.orange);
+        g2.fill(rect);
     }
 
     protected void drawBackground(Graphics2D g2) {

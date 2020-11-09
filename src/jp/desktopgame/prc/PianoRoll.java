@@ -76,11 +76,14 @@ public class PianoRoll extends JComponent implements Scrollable {
     private boolean editable;
     private Phrase clipboard;
     private Optional<PianoRollGroup> group;
+    private RegionManager regionManager;
 
     private static final String uiClassID = "PianoRollUI";
 
     public PianoRoll() {
         this.group = Optional.empty();
+        this.regionManager = new RegionManager();
+        regionManager.addRegion(new Region(0, 100, 0));
         setEditable(true);
         setBeatSplitCount(4);
         setBeatWidth(96);
@@ -299,6 +302,14 @@ public class PianoRoll extends JComponent implements Scrollable {
      */
     public Optional<PianoRollGroup> getGroup() {
         return group;
+    }
+
+    /**
+     * リージョンマネージャを返します.
+     * @return
+     */
+    public RegionManager getRegionManager() {
+        return regionManager;
     }
 
     //

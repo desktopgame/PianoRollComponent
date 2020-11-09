@@ -10,8 +10,10 @@ package jp.desktopgame.prc;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JComponent;
@@ -53,6 +55,24 @@ public class BasicRulerUI extends RulerUI {
         g2.setColor(Color.black);
         g2.drawLine(kw, 0, kw, ruler.getHeight());
         g2.drawLine(0, 0, ruler.getWidth(), 0);
+        RegionManager regionMan = ruler.getPianoRoll().getRegionManager();
+        for (Region region : regionMan.getRegions()) {
+            int height = ruler.getHeight();
+            Rectangle rect = new Rectangle(region.getStartOffset(), height / 2, region.getLength(), height / 2);
+            rect.x += kw + 1;
+            g2.setColor(Color.orange);
+            g2.fill(rect);
+            g2.setColor(Color.black);
+            g2.draw(rect);
+
+            String str = String.format("x%d", region.getLoopCount());
+            FontMetrics fm = g2.getFontMetrics();
+            int strWidth = fm.stringWidth(str);
+            int strHeight = fm.getHeight();
+            int strX = rect.x + ((rect.width - strWidth) / 2);
+            int strY = rect.y + ((rect.height - strHeight) / 2) + fm.getAscent();
+            g2.drawString(str, strX, strY);
+        }
         g2.setColor(color);
     }
 
