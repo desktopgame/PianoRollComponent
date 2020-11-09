@@ -23,7 +23,7 @@ import javax.swing.JComponent;
  *
  * @author desktopgame
  */
-public class BasicRulerUI extends RulerUI {
+public class BasicRulerUI extends RulerUI implements RegionUpdateListener {
 
     private Ruler ruler;
     private MouseHandler mouseHandler;
@@ -37,6 +37,7 @@ public class BasicRulerUI extends RulerUI {
         this.ruler = (Ruler) c;
         ruler.addMouseListener(mouseHandler);
         ruler.addMouseMotionListener(mouseHandler);
+        ruler.getPianoRoll().getRegionManager().addRegionUpdateListener(this);
         ruler.setPreferredSize(new Dimension(Short.MAX_VALUE, 30));
     }
 
@@ -44,6 +45,7 @@ public class BasicRulerUI extends RulerUI {
     public void uninstallUI(JComponent c) {
         ruler.removeMouseListener(mouseHandler);
         ruler.removeMouseMotionListener(mouseHandler);
+        ruler.getPianoRoll().getRegionManager().removeRegionUpdateListener(this);
         this.ruler = null;
     }
 
@@ -74,6 +76,11 @@ public class BasicRulerUI extends RulerUI {
             g2.drawString(str, strX, strY);
         }
         g2.setColor(color);
+    }
+
+    @Override
+    public void regionUpdate(RegionUpdateEvent e) {
+        ruler.repaint();
     }
 
     private class MouseHandler extends MouseAdapter {
