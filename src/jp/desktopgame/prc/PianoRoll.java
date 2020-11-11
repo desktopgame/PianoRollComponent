@@ -83,7 +83,6 @@ public class PianoRoll extends JComponent implements Scrollable {
     public PianoRoll() {
         this.group = Optional.empty();
         this.regionManager = new RegionManager();
-        regionManager.addRegion(new Region(0, 100, 0));
         setEditable(true);
         setBeatSplitCount(4);
         setBeatWidth(96);

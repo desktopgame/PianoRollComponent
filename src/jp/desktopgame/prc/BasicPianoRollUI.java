@@ -46,6 +46,7 @@ public class BasicPianoRollUI extends PianoRollUI {
     private MouseHandler mouseHandler;
     private PianoRollModelHandler pianoRollModelHandler;
     private OnionSkinHandler onionSkinHandler;
+    private RegionUpdateHandler regionUpdateHandler;
     private NoteDragManager noteDragManager;
     private NoteResizeManager noteResizeManager;
     private RectangleSelectManager rectSelectManager;
@@ -61,6 +62,7 @@ public class BasicPianoRollUI extends PianoRollUI {
         this.mouseHandler = new MouseHandler();
         this.onionSkinHandler = new OnionSkinHandler();
         this.pianoRollModelHandler = new PianoRollModelHandler();
+        this.regionUpdateHandler = new RegionUpdateHandler();
         this.noteDragManager = createNoteDragManager();
         this.noteResizeManager = createNoteResizeManager();
         this.rectSelectManager = new RectangleSelectManager(this);
@@ -83,6 +85,7 @@ public class BasicPianoRollUI extends PianoRollUI {
         p.addKeyListener(keyHandler);
         p.addMouseMotionListener(mouseHandler);
         p.addMouseListener(mouseHandler);
+        p.getRegionManager().addRegionUpdateListener(regionUpdateHandler);
         p.getModel().addPianoRollModelListener(pianoRollModelHandler);
         updatePrefSize();
     }
@@ -93,6 +96,7 @@ public class BasicPianoRollUI extends PianoRollUI {
         p.removeKeyListener(keyHandler);
         p.removeMouseMotionListener(mouseHandler);
         p.removeMouseListener(mouseHandler);
+        p.getRegionManager().removeRegionUpdateListener(regionUpdateHandler);
         p.getModel().removePianoRollModelListener(pianoRollModelHandler);
         this.p = null;
     }
@@ -935,5 +939,15 @@ public class BasicPianoRollUI extends PianoRollUI {
         public void stateChanged(ChangeEvent e) {
             p.repaint();
         }
+    }
+
+    private class RegionUpdateHandler implements RegionUpdateListener {
+
+        @Override
+        public void regionUpdate(RegionUpdateEvent e) {
+            e.getOldValue().map((x) -> x._toRect(0, p.getHeight())).ifPresent(p::repaint);
+            e.getNewValue().map((x) -> x._toRect(0, p.getHeight())).ifPresent(p::repaint);
+        }
+
     }
 }
