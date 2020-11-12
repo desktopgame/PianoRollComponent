@@ -945,9 +945,12 @@ public class BasicPianoRollUI extends PianoRollUI {
 
         @Override
         public void regionUpdate(RegionUpdateEvent e) {
-            e.getOldValue().map((x) -> x._toRect(0, p.getHeight())).ifPresent(p::repaint);
-            e.getNewValue().map((x) -> x._toRect(0, p.getHeight())).ifPresent(p::repaint);
+            e.getOldValue().map((x) -> toRect(x)).ifPresent(p::repaint);
+            e.getNewValue().map((x) -> toRect(x)).ifPresent(p::repaint);
         }
 
+        private Rectangle toRect(Region region) {
+            return new Rectangle(region.getStartOffset(), 0, region.getLength(), p.getHeight());
+        }
     }
 }

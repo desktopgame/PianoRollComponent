@@ -79,7 +79,7 @@ public class Region {
         return endOffset - startOffset;
     }
 
-    public Rectangle _toRect(int baseX, int height) {
+    public Rectangle toRect(int baseX, int height) {
         return new Rectangle(baseX + getStartOffset(), 0, getLength(), height);
     }
 }

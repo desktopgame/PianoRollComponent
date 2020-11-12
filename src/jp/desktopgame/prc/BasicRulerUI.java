@@ -114,7 +114,8 @@ public class BasicRulerUI extends RulerUI implements RegionUpdateListener, Adjus
         JScrollBar hbar = ruler.getScrollPane().getHorizontalScrollBar();
         int hOffset = hbar.getValue();
         int kw = ruler.getKeyboard().getWidth();
-        Rectangle r = region._toRect(kw - hOffset, ruler.getHeight() / 2);
+        Rectangle r = new Rectangle(region.getStartOffset() + (kw - hOffset), 0, region.getLength(), ruler.getHeight() / 2);
+        //Rectangle r = region._toRect(kw - hOffset, ruler.getHeight() / 2);
         r.y += ruler.getHeight() / 2;
         return r;
     }
@@ -229,7 +230,9 @@ public class BasicRulerUI extends RulerUI implements RegionUpdateListener, Adjus
                     }
                 }
                 if (regionMan.getRegions().stream().filter((x) -> x != curRegion).anyMatch((x) -> {
-                    return x._toRect(0, 10).intersects(curRegion._toRect(0, 10));
+                    Rectangle a = new Rectangle(x.getStartOffset(), 0, x.getLength(), 10);
+                    Rectangle b = new Rectangle(curRegion.getStartOffset(), 0, curRegion.getLength(), 10);
+                    return a.intersects(b);
                 })) {
                     curRegion.setStartOffset(startOffset);
                     curRegion.setEndOffset(endOffset);
