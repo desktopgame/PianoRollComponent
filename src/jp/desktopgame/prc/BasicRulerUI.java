@@ -25,6 +25,7 @@ import java.util.Optional;
 import javax.swing.JComponent;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 
 /**
  * RulerUIの基本L&F実装です.
@@ -130,7 +131,23 @@ public class BasicRulerUI extends RulerUI implements RegionUpdateListener, Adjus
                 return;
             }
             if (e.getClickCount() == 1) {
-                barMove(e);
+                RegionManager regionMan = ruler.getPianoRoll().getRegionManager();
+                List<Region> regions = regionMan.getRegions();
+                Optional<Region> regionOpt = regions.stream().filter((x) -> {
+                    Rectangle r = toRect(x);
+                    return r.contains(e.getPoint());
+                }).findFirst();
+                if (regionOpt.isPresent()) {
+                    Region r = regionOpt.get();
+                    if (SwingUtilities.isLeftMouseButton(e)) {
+                        r.setLoopCount(r.getLoopCount() + 1);
+                    } else {
+                        int n = Math.max(1, r.getLoopCount() - 1);
+                        r.setLoopCount(n);
+                    }
+                } else {
+                    barMove(e);
+                }
             } else if (e.getClickCount() == 2) {
                 int kw = ruler.getKeyboard().getWidth();
                 JScrollBar hbar = ruler.getScrollPane().getHorizontalScrollBar();
