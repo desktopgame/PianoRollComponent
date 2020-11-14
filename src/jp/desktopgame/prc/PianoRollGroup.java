@@ -97,7 +97,7 @@ public class PianoRollGroup {
      * @param pianoRoll
      */
     public void addPianoRoll(PianoRoll pianoRoll) {
-        if (!pianoRollList.isEmpty()) {
+        if (!pianoRollList.isEmpty() && pianoRoll.getRegionManager().getRegionCount() == 0) {
             pianoRollList.get(0).getRegionManager().getRegions().forEach((e) -> pianoRoll.getRegionManager().addRegion(new Region(e)));
         }
         pianoRollList.add(pianoRoll);
