@@ -12,6 +12,7 @@ import java.util.EventObject;
 import java.util.Optional;
 
 /**
+ * リージョンの更新を通知するイベント.
  *
  * @author desktopgame
  */

@@ -16,6 +16,7 @@ import java.util.List;
 import javax.swing.event.EventListenerList;
 
 /**
+ * リージョンの一覧を管理するクラスです.
  *
  * @author desktopgame
  */
@@ -31,10 +32,20 @@ public class RegionManager {
         this.listenerList = new EventListenerList();
     }
 
+    /**
+     * リージョンの更新を監視するリスナーを追加します.
+     *
+     * @param listener
+     */
     public void addRegionUpdateListener(RegionUpdateListener listener) {
         listenerList.add(RegionUpdateListener.class, listener);
     }
 
+    /**
+     * リージョンの更新を監視するリスナーを削除します.
+     *
+     * @param listener
+     */
     public void removeRegionUpdateListener(RegionUpdateListener listener) {
         listenerList.remove(RegionUpdateListener.class, listener);
     }
@@ -45,6 +56,11 @@ public class RegionManager {
         }
     }
 
+    /**
+     * リージョンを追加します.
+     *
+     * @param region
+     */
     public void addRegion(Region region) {
         regions.add(region);
         region.addPropertyChangeListener(propHandler);
@@ -52,6 +68,11 @@ public class RegionManager {
         fireRegionUpdate(new RegionUpdateEvent(this, null, region));
     }
 
+    /**
+     * リージョンを削除します.
+     *
+     * @param region
+     */
     public void removeRegion(Region region) {
         regions.remove(region);
         region.removePropertyChangeListener(propHandler);
@@ -59,6 +80,11 @@ public class RegionManager {
         fireRegionUpdate(new RegionUpdateEvent(this, region, null));
     }
 
+    /**
+     * リージョンを削除します.
+     *
+     * @param i
+     */
     public void removeRegion(int i) {
         Region region = regions.remove(i);
         region.removePropertyChangeListener(propHandler);
@@ -66,14 +92,30 @@ public class RegionManager {
         fireRegionUpdate(new RegionUpdateEvent(this, region, null));
     }
 
+    /**
+     * 指定位置のリージョンを返します.
+     *
+     * @param i
+     * @return
+     */
     public Region getRegion(int i) {
         return regions.get(i);
     }
 
+    /**
+     * 全てのリージョンを返します.
+     *
+     * @return
+     */
     public List<Region> getRegions() {
         return Collections.unmodifiableList(new ArrayList<>(regions));
     }
 
+    /**
+     * リージョンの数を返します.
+     *
+     * @return
+     */
     public int getRegionCount() {
         return regions.size();
     }

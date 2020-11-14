@@ -11,10 +11,16 @@ package jp.desktopgame.prc;
 import java.util.EventListener;
 
 /**
+ * リージョンの更新を監視するリスナーです.
  *
  * @author desktopgame
  */
 public interface RegionUpdateListener extends EventListener {
 
+    /**
+     * リージョンが更新されると呼ばれます.
+     *
+     * @param e
+     */
     public void regionUpdate(RegionUpdateEvent e);
 }
