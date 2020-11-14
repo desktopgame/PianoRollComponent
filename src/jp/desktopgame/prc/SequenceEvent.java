@@ -16,13 +16,20 @@ import java.util.EventObject;
  */
 public class SequenceEvent extends EventObject {
 
+    public enum Type {
+        Reset,
+        Move
+    }
+
     private int oldPosition;
     private int newPosition;
+    private Type type;
 
-    public SequenceEvent(PianoRollLayerUI ui, int oldPosition, int newPosition) {
+    public SequenceEvent(PianoRollLayerUI ui, int oldPosition, int newPosition, Type type) {
         super(ui);
         this.oldPosition = oldPosition;
         this.newPosition = newPosition;
+        this.type = type;
     }
 
     @Override
@@ -38,4 +45,7 @@ public class SequenceEvent extends EventObject {
         return newPosition;
     }
 
+    public Type getType() {
+        return type;
+    }
 }

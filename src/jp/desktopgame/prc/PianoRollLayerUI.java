@@ -113,11 +113,11 @@ public class PianoRollLayerUI extends LayerUI<PianoRoll> {
         }
         if (this.barStyle == BarStyle.Loop) {
             updateBarPosition(0);
-            fireSequenceEvent(new SequenceEvent(this, barPosition, 0));
+            fireSequenceEvent(new SequenceEvent(this, barPosition, 0, SequenceEvent.Type.Reset));
         } else {
             self.repaint(new Rectangle(barPosition, 0, barWidth, p.getUI().computeHeight()));
             updateBarPosition(0);
-            fireSequenceEvent(new SequenceEvent(this, barPosition, 0));
+            fireSequenceEvent(new SequenceEvent(this, barPosition, 0, SequenceEvent.Type.Reset));
             timer.stop();
             self.repaint(new Rectangle(barPosition, 0, barWidth, p.getUI().computeHeight()));
         }
@@ -125,7 +125,7 @@ public class PianoRollLayerUI extends LayerUI<PianoRoll> {
 
     private void doStep() {
         updateBarPosition(barPosition + 1);
-        fireSequenceEvent(new SequenceEvent(this, barPosition - 1, barPosition));
+        fireSequenceEvent(new SequenceEvent(this, barPosition - 1, barPosition, SequenceEvent.Type.Move));
         int index = p.getUI().getRelativeBeatIndex(barPosition);
         List<Note> allNote = new ArrayList<>();
         for (int y = 0; y < p.getUI().computeHeight(); y += p.getBeatHeight()) {
@@ -212,7 +212,7 @@ public class PianoRollLayerUI extends LayerUI<PianoRoll> {
         self.repaint(new Rectangle(barPosition, 0, barWidth, p.getUI().computeHeight()));
         int a = this.barPosition;
         updateBarPosition(pos);
-        fireSequenceEvent(new SequenceEvent(this, a, pos));
+        fireSequenceEvent(new SequenceEvent(this, a, pos, SequenceEvent.Type.Move));
         self.repaint(new Rectangle(barPosition, 0, barWidth, p.getUI().computeHeight()));
     }
 
