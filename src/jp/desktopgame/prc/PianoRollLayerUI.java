@@ -17,6 +17,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.swing.JComponent;
 import javax.swing.JLayer;
@@ -46,6 +47,8 @@ public class PianoRollLayerUI extends LayerUI<PianoRoll> {
     private JScrollPane scrollPane;
     private boolean syncScrollPane;
     private long onLastTick;
+    private List<Region.Monitor> monitors;
+    private RegionUpdateHandler regionUpdateHandler;
 
     public enum BarStyle {
         Loop,
@@ -60,6 +63,8 @@ public class PianoRollLayerUI extends LayerUI<PianoRoll> {
         this.timer = new Timer(0, this::onTime);
         this.listenerList = new EventListenerList();
         this.cachedNotes = new ArrayList<>();
+        this.monitors = new ArrayList<>();
+        this.regionUpdateHandler = new RegionUpdateHandler();
     }
 
     /**
@@ -146,6 +151,12 @@ public class PianoRollLayerUI extends LayerUI<PianoRoll> {
     }
 
     private void updateBarPosition(int newBarPosition) {
+        final int nNewBarPos = newBarPosition;
+        Optional<Region.Monitor> monitorOpt = monitors.stream().filter((e) -> e.canMoreLoop() && e.getRegion().getEndOffset() == nNewBarPos).findFirst();
+        if (monitorOpt.isPresent()) {
+            monitorOpt.get().addLoop();
+            newBarPosition = monitorOpt.get().getRegion().getStartOffset();
+        }
         this.barPosition = newBarPosition;
         if (newBarPosition % p.getBeatWidth() == 0) {
             long t = System.currentTimeMillis();
@@ -246,6 +257,9 @@ public class PianoRollLayerUI extends LayerUI<PianoRoll> {
      * シーケンスの再生を開始します.
      */
     public void playSequence() {
+        RegionManager regionMan = p.getRegionManager();
+        this.monitors.clear();
+        this.monitors.addAll(regionMan.getRegions().stream().map((e) -> e.getMonitor(true)).collect(Collectors.toList()));
         this.onLastTick = System.currentTimeMillis();
         timer.setRepeats(true);
         timer.setInitialDelay(0);
@@ -310,8 +324,10 @@ public class PianoRollLayerUI extends LayerUI<PianoRoll> {
     @Override
     public void installUI(JComponent c) {
         super.installUI(c);
+        this.monitors.clear();
         ((JLayer) c).setLayerEventMask(AWTEvent.MOUSE_EVENT_MASK);
         this.p = (this.self = ((JLayer<PianoRoll>) c)).getView();
+        p.getRegionManager().addRegionUpdateListener(regionUpdateHandler);
         setSequenceUpdateRate(UpdateRate.bpmToUpdateRate(480, 60));
     }
 
@@ -319,6 +335,15 @@ public class PianoRollLayerUI extends LayerUI<PianoRoll> {
     public void uninstallUI(JComponent c) {
         super.uninstallUI(c);
         ((JLayer) c).setLayerEventMask(0);
+        p.getRegionManager().removeRegionUpdateListener(regionUpdateHandler);
         this.p = null;
+    }
+
+    private class RegionUpdateHandler implements RegionUpdateListener {
+
+        @Override
+        public void regionUpdate(RegionUpdateEvent e) {
+            e.getNewValue().ifPresent((x) -> monitors.add(x.getMonitor(true)));
+        }
     }
 }

@@ -48,18 +48,21 @@ public class RegionManager {
     public void addRegion(Region region) {
         regions.add(region);
         region.addPropertyChangeListener(propHandler);
+        region.addNotify();
         fireRegionUpdate(new RegionUpdateEvent(this, null, region));
     }
 
     public void removeRegion(Region region) {
         regions.remove(region);
         region.removePropertyChangeListener(propHandler);
+        region.removeNotify();
         fireRegionUpdate(new RegionUpdateEvent(this, region, null));
     }
 
     public void removeRegion(int i) {
         Region region = regions.remove(i);
         region.removePropertyChangeListener(propHandler);
+        region.removeNotify();
         fireRegionUpdate(new RegionUpdateEvent(this, region, null));
     }
 

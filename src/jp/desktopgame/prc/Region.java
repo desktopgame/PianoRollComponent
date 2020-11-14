@@ -21,6 +21,8 @@ public class Region {
     private int endOffset;
     private int loopCount;
     private PropertyChangeSupport support;
+    private Monitor monitor;
+    private boolean removed;
 
     public Region() {
         this(0, 0, 0);
@@ -31,6 +33,23 @@ public class Region {
         this.endOffset = endOffset;
         this.loopCount = loopCount;
         this.support = new PropertyChangeSupport(this);
+        this.monitor = new Monitor();
+    }
+
+    void addNotify() {
+        this.removed = false;
+    }
+
+    void removeNotify() {
+        this.removed = true;
+        monitor.reset();
+    }
+
+    public Monitor getMonitor(boolean reset) {
+        if (reset) {
+            monitor.reset();
+        }
+        return monitor;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -78,4 +97,28 @@ public class Region {
         return endOffset - startOffset;
     }
 
+    public class Monitor {
+
+        private int loopCount;
+
+        private Monitor() {
+            this.loopCount = 0;
+        }
+
+        public void reset() {
+            this.loopCount = 0;
+        }
+
+        public void addLoop() {
+            this.loopCount++;
+        }
+
+        public boolean canMoreLoop() {
+            return loopCount < Region.this.loopCount && !Region.this.removed;
+        }
+
+        public Region getRegion() {
+            return Region.this;
+        }
+    }
 }
