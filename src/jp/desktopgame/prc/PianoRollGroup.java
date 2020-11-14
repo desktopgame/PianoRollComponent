@@ -330,6 +330,9 @@ public class PianoRollGroup {
                         } else if (e.getNewValue().isPresent()) {
                             Region old = e.getOldValue().get();
                             update(x, old, e.getNewValue().get());
+                        } else if (!e.getNewValue().isPresent()) {
+                            Optional<Region> regionOpt = x.getRegions().stream().filter((a) -> eqRegion(a, e.getOldValue().get())).findFirst();
+                            regionOpt.ifPresent((a) -> x.removeRegion(a));
                         }
                     });
         }
