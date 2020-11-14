@@ -83,8 +83,8 @@ public class DefaultNoteDragManager implements NoteDragManager {
 
     @Override
     public void move(int x, int y) {
-        this.currentX = x;
-        this.currentY = y;
+        this.currentX = Math.max(x, 0);
+        this.currentY = Math.max(y, 0);
     }
 
     @Override
