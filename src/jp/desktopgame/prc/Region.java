@@ -37,6 +37,10 @@ public class Region {
         this.monitor = new Monitor();
     }
 
+    public Region(Region src) {
+        this(src.getStartOffset(), src.getEndOffset(), src.getLoopCount());
+    }
+
     void addNotify() {
         this.removed = false;
     }

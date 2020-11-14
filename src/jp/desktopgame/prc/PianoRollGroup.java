@@ -37,6 +37,7 @@ public class PianoRollGroup {
     private Stack<Color> colorBuf;
     private PropertyChangeHandler propertyChangeHandler;
     private PianoRollModelHandler pianoRollModelHandler;
+    private RegionUpdateHandler regionUpdateHandler;
     private SequenceHandler sequenceHandler;
     private EventListenerList listenerList;
     private boolean syncPosition;
@@ -48,6 +49,7 @@ public class PianoRollGroup {
         this.colorBuf = new Stack<>();
         this.propertyChangeHandler = new PropertyChangeHandler();
         this.pianoRollModelHandler = new PianoRollModelHandler();
+        this.regionUpdateHandler = new RegionUpdateHandler();
         this.sequenceHandler = new SequenceHandler();
         this.listenerList = new EventListenerList();
         this.syncPosition = true;
@@ -95,9 +97,13 @@ public class PianoRollGroup {
      * @param pianoRoll
      */
     public void addPianoRoll(PianoRoll pianoRoll) {
+        if (!pianoRollList.isEmpty()) {
+            pianoRollList.get(0).getRegionManager().getRegions().forEach((e) -> pianoRoll.getRegionManager().addRegion(new Region(e)));
+        }
         pianoRollList.add(pianoRoll);
         pianoRoll.addPropertyChangeListener(propertyChangeHandler);
         pianoRoll.getModel().addPianoRollModelListener(pianoRollModelHandler);
+        pianoRoll.getRegionManager().addRegionUpdateListener(regionUpdateHandler);
         addColor();
         pianoRoll.setGroup(this);
         getLayer(pianoRoll).ifPresent((e) -> e.addSequenceListener(sequenceHandler));
@@ -141,6 +147,7 @@ public class PianoRollGroup {
     public void removePianoRoll(PianoRoll pianoRoll) {
         removeColor(pianoRollList.indexOf(pianoRoll));
         pianoRollList.remove(pianoRoll);
+        pianoRoll.getRegionManager().removeRegionUpdateListener(regionUpdateHandler);
         pianoRoll.setGroup(null);
         getLayer(pianoRoll).ifPresent((e) -> e.removeSequenceListener(sequenceHandler));
     }
@@ -305,5 +312,40 @@ public class PianoRollGroup {
             }
         }
 
+    }
+
+    private class RegionUpdateHandler implements RegionUpdateListener {
+
+        @Override
+        public void regionUpdate(RegionUpdateEvent e) {
+            pianoRollList.stream()
+                    .filter((x) -> x.getRegionManager() != e.getSource())
+                    .map((x) -> x.getRegionManager())
+                    .forEach((x) -> {
+                        if (!e.getOldValue().isPresent()) {
+                            Optional<Region> regionOpt = x.getRegions().stream().filter((a) -> eqRegion(a, e.getNewValue().get())).findFirst();
+                            if (!regionOpt.isPresent()) {
+                                x.addRegion(new Region(e.getNewValue().get()));
+                            }
+                        } else if (e.getNewValue().isPresent()) {
+                            Region old = e.getOldValue().get();
+                            update(x, old, e.getNewValue().get());
+                        }
+                    });
+        }
+
+        private void update(RegionManager rm, Region target, Region nv) {
+            Optional<Region> regionOpt = rm.getRegions().stream().filter((e) -> eqRegion(e, target)).findFirst();
+            regionOpt.ifPresent((e) -> {
+                e.setStartOffset(nv.getStartOffset());
+                e.setEndOffset(nv.getEndOffset());
+                e.setLoopCount(nv.getLoopCount());
+
+            });
+        }
+
+        private boolean eqRegion(Region a, Region b) {
+            return a.getStartOffset() == b.getStartOffset() && a.getEndOffset() == b.getEndOffset() && a.getLength() == b.getLength();
+        }
     }
 }
