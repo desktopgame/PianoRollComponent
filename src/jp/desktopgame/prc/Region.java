@@ -8,7 +8,6 @@
  */
 package jp.desktopgame.prc;
 
-import java.awt.Rectangle;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
@@ -79,7 +78,4 @@ public class Region {
         return endOffset - startOffset;
     }
 
-    public Rectangle toRect(int baseX, int height) {
-        return new Rectangle(baseX + getStartOffset(), 0, getLength(), height);
-    }
 }
